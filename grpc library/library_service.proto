@@ -12,7 +12,7 @@ service Library {
     rpc delete_book (BookName) returns (Message);
 
     // updates some fields of a book (only librarians can do that)
-    rpc update_book (Book) returns (Message);
+    rpc update_book (UpdatedBook) returns (Message);
 
     // gets a book by name
     rpc get_book (BookName) returns (Book);
@@ -43,7 +43,7 @@ message Book {
 
 
 message Books {
-    repeated Book list_of_books = 1;
+    repeated Book book = 1;
 }
 
 message Message {

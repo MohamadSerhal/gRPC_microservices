@@ -26,7 +26,7 @@ class LibraryStub(object):
                 )
         self.update_book = channel.unary_unary(
                 '/library.Library/update_book',
-                request_serializer=library__service__pb2.Book.SerializeToString,
+                request_serializer=library__service__pb2.UpdatedBook.SerializeToString,
                 response_deserializer=library__service__pb2.Message.FromString,
                 )
         self.get_book = channel.unary_unary(
@@ -34,34 +34,46 @@ class LibraryStub(object):
                 request_serializer=library__service__pb2.BookName.SerializeToString,
                 response_deserializer=library__service__pb2.Book.FromString,
                 )
+        self.get_books_list = channel.unary_unary(
+                '/library.Library/get_books_list',
+                request_serializer=library__service__pb2.Pagination.SerializeToString,
+                response_deserializer=library__service__pb2.Books.FromString,
+                )
 
 
 class LibraryServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def add_book(self, request, context):
-        """Add book to mongodb 
+        """Add book to mongodb (only librarians can do that)
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def delete_book(self, request, context):
-        """Remove a book by name from the DB
+        """Remove a book by name from the DB (only librarians can do that)
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def update_book(self, request, context):
-        """rpc update_book
+        """updates some fields of a book (only librarians can do that)
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def get_book(self, request, context):
-        """rpc get_book
+        """gets a book by name
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def get_books_list(self, request, context):
+        """returns books sorted in alphabetical order implementing pagination
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -82,13 +94,18 @@ def add_LibraryServicer_to_server(servicer, server):
             ),
             'update_book': grpc.unary_unary_rpc_method_handler(
                     servicer.update_book,
-                    request_deserializer=library__service__pb2.Book.FromString,
+                    request_deserializer=library__service__pb2.UpdatedBook.FromString,
                     response_serializer=library__service__pb2.Message.SerializeToString,
             ),
             'get_book': grpc.unary_unary_rpc_method_handler(
                     servicer.get_book,
                     request_deserializer=library__service__pb2.BookName.FromString,
                     response_serializer=library__service__pb2.Book.SerializeToString,
+            ),
+            'get_books_list': grpc.unary_unary_rpc_method_handler(
+                    servicer.get_books_list,
+                    request_deserializer=library__service__pb2.Pagination.FromString,
+                    response_serializer=library__service__pb2.Books.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -146,7 +163,7 @@ class Library(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/library.Library/update_book',
-            library__service__pb2.Book.SerializeToString,
+            library__service__pb2.UpdatedBook.SerializeToString,
             library__service__pb2.Message.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -165,5 +182,22 @@ class Library(object):
         return grpc.experimental.unary_unary(request, target, '/library.Library/get_book',
             library__service__pb2.BookName.SerializeToString,
             library__service__pb2.Book.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def get_books_list(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/library.Library/get_books_list',
+            library__service__pb2.Pagination.SerializeToString,
+            library__service__pb2.Books.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

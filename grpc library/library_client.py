@@ -25,6 +25,10 @@ def run():
         response = stub.add_book(library_service_pb2.Book(name="Test Book"))
         print("Adding test book to db\n")
         print(response)
+        print("-----------------------------------------------------------")
+        response = stub.get_books_list(library_service_pb2.Pagination(limit=3, offset=1))
+        print("Testing pagination")
+        print(response)
 
 
 if __name__ == '__main__':

@@ -11,6 +11,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from google.protobuf import any_pb2 as google_dot_protobuf_dot_any__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -19,8 +20,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x15library_service.proto\x12\x07library\"\xf3\x01\n\x04\x42ook\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07\x61uthors\x18\x02 \x03(\t\x12\x11\n\tpublisher\x18\x03 \x01(\t\x12\x17\n\x0f\x64\x61te_of_release\x18\x04 \x01(\t\x12\"\n\x05genre\x18\x05 \x01(\x0e\x32\x13.library.Book.Genre\x12\x13\n\x0b\x64\x65scription\x18\x06 \x01(\t\"g\n\x05Genre\x12\n\n\x06\x41\x43TION\x10\x00\x12\x13\n\x0fSCIENCE_FICTION\x10\x01\x12\x0b\n\x07ROMANCE\x10\x02\x12\t\n\x05\x44RAMA\x10\x03\x12\n\n\x06\x43OMEDY\x10\x04\x12\n\n\x06HORROR\x10\x05\x12\r\n\tADVENTURE\x10\x06\"\x1a\n\x07Message\x12\x0f\n\x07message\x18\x01 \x01(\t\"\x18\n\x08\x42ookName\x12\x0c\n\x04name\x18\x01 \x01(\t2\xc8\x01\n\x07Library\x12+\n\x08\x61\x64\x64_book\x12\r.library.Book\x1a\x10.library.Message\x12\x32\n\x0b\x64\x65lete_book\x12\x11.library.BookName\x1a\x10.library.Message\x12.\n\x0bupdate_book\x12\r.library.Book\x1a\x10.library.Message\x12,\n\x08get_book\x12\x11.library.BookName\x1a\r.library.Bookb\x06proto3'
-)
+  serialized_pb=b'\n\x15library_service.proto\x12\x07library\x1a\x19google/protobuf/any.proto\"\xfd\x01\n\x04\x42ook\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07\x61uthors\x18\x02 \x03(\t\x12\x11\n\tpublisher\x18\x03 \x01(\t\x12\x17\n\x0f\x64\x61te_of_release\x18\x04 \x01(\t\x12\"\n\x05genre\x18\x05 \x01(\x0e\x32\x13.library.Book.Genre\x12\x13\n\x0b\x64\x65scription\x18\x06 \x01(\t\"q\n\x05Genre\x12\x08\n\x04NONE\x10\x00\x12\x13\n\x0fSCIENCE_FICTION\x10\x01\x12\x0b\n\x07ROMANCE\x10\x02\x12\t\n\x05\x44RAMA\x10\x03\x12\n\n\x06\x43OMEDY\x10\x04\x12\n\n\x06HORROR\x10\x05\x12\r\n\tADVENTURE\x10\x06\x12\n\n\x06\x41\x43TION\x10\x07\"-\n\x05\x42ooks\x12$\n\rlist_of_books\x18\x01 \x03(\x0b\x32\r.library.Book\"\x1a\n\x07Message\x12\x0f\n\x07message\x18\x01 \x01(\t\"\x18\n\x08\x42ookName\x12\x0c\n\x04name\x18\x01 \x01(\t\"\xb9\x01\n\x04Pair\x12!\n\x03key\x18\x01 \x01(\x0e\x32\x14.library.Pair.Fields\x12#\n\x05value\x18\x02 \x01(\x0b\x32\x14.google.protobuf.Any\"i\n\x06\x46ields\x12\x08\n\x04NONE\x10\x00\x12\x08\n\x04name\x10\x01\x12\x0b\n\x07\x61uthors\x10\x02\x12\r\n\tpublisher\x10\x03\x12\x13\n\x0f\x64\x61te_of_release\x10\x04\x12\t\n\x05genre\x10\x05\x12\x0f\n\x0b\x64\x65scription\x10\x06\"4\n\x0bUpdatedBook\x12%\n\x0eupdated_fields\x18\x01 \x03(\x0b\x32\r.library.Pair\"+\n\nPagination\x12\x0e\n\x06offset\x18\x01 \x01(\x05\x12\r\n\x05limit\x18\x02 \x01(\x05\x32\x86\x02\n\x07Library\x12+\n\x08\x61\x64\x64_book\x12\r.library.Book\x1a\x10.library.Message\x12\x32\n\x0b\x64\x65lete_book\x12\x11.library.BookName\x1a\x10.library.Message\x12\x35\n\x0bupdate_book\x12\x14.library.UpdatedBook\x1a\x10.library.Message\x12,\n\x08get_book\x12\x11.library.BookName\x1a\r.library.Book\x12\x35\n\x0eget_books_list\x12\x13.library.Pagination\x1a\x0e.library.Booksb\x06proto3'
+  ,
+  dependencies=[google_dot_protobuf_dot_any__pb2.DESCRIPTOR,])
 
 
 
@@ -32,7 +34,7 @@ _BOOK_GENRE = _descriptor.EnumDescriptor(
   create_key=_descriptor._internal_create_key,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='ACTION', index=0, number=0,
+      name='NONE', index=0, number=0,
       serialized_options=None,
       type=None,
       create_key=_descriptor._internal_create_key),
@@ -66,13 +68,68 @@ _BOOK_GENRE = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None,
       create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='ACTION', index=7, number=7,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=175,
-  serialized_end=278,
+  serialized_start=202,
+  serialized_end=315,
 )
 _sym_db.RegisterEnumDescriptor(_BOOK_GENRE)
+
+_PAIR_FIELDS = _descriptor.EnumDescriptor(
+  name='Fields',
+  full_name='library.Pair.Fields',
+  filename=None,
+  file=DESCRIPTOR,
+  create_key=_descriptor._internal_create_key,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='NONE', index=0, number=0,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='name', index=1, number=1,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='authors', index=2, number=2,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='publisher', index=3, number=3,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='date_of_release', index=4, number=4,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='genre', index=5, number=5,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='description', index=6, number=6,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=499,
+  serialized_end=604,
+)
+_sym_db.RegisterEnumDescriptor(_PAIR_FIELDS)
 
 
 _BOOK = _descriptor.Descriptor(
@@ -138,8 +195,40 @@ _BOOK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=35,
-  serialized_end=278,
+  serialized_start=62,
+  serialized_end=315,
+)
+
+
+_BOOKS = _descriptor.Descriptor(
+  name='Books',
+  full_name='library.Books',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='list_of_books', full_name='library.Books.list_of_books', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=317,
+  serialized_end=362,
 )
 
 
@@ -170,8 +259,8 @@ _MESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=280,
-  serialized_end=306,
+  serialized_start=364,
+  serialized_end=390,
 )
 
 
@@ -202,15 +291,135 @@ _BOOKNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=308,
-  serialized_end=332,
+  serialized_start=392,
+  serialized_end=416,
+)
+
+
+_PAIR = _descriptor.Descriptor(
+  name='Pair',
+  full_name='library.Pair',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='library.Pair.key', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='library.Pair.value', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _PAIR_FIELDS,
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=419,
+  serialized_end=604,
+)
+
+
+_UPDATEDBOOK = _descriptor.Descriptor(
+  name='UpdatedBook',
+  full_name='library.UpdatedBook',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='updated_fields', full_name='library.UpdatedBook.updated_fields', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=606,
+  serialized_end=658,
+)
+
+
+_PAGINATION = _descriptor.Descriptor(
+  name='Pagination',
+  full_name='library.Pagination',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='offset', full_name='library.Pagination.offset', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='limit', full_name='library.Pagination.limit', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=660,
+  serialized_end=703,
 )
 
 _BOOK.fields_by_name['genre'].enum_type = _BOOK_GENRE
 _BOOK_GENRE.containing_type = _BOOK
+_BOOKS.fields_by_name['list_of_books'].message_type = _BOOK
+_PAIR.fields_by_name['key'].enum_type = _PAIR_FIELDS
+_PAIR.fields_by_name['value'].message_type = google_dot_protobuf_dot_any__pb2._ANY
+_PAIR_FIELDS.containing_type = _PAIR
+_UPDATEDBOOK.fields_by_name['updated_fields'].message_type = _PAIR
 DESCRIPTOR.message_types_by_name['Book'] = _BOOK
+DESCRIPTOR.message_types_by_name['Books'] = _BOOKS
 DESCRIPTOR.message_types_by_name['Message'] = _MESSAGE
 DESCRIPTOR.message_types_by_name['BookName'] = _BOOKNAME
+DESCRIPTOR.message_types_by_name['Pair'] = _PAIR
+DESCRIPTOR.message_types_by_name['UpdatedBook'] = _UPDATEDBOOK
+DESCRIPTOR.message_types_by_name['Pagination'] = _PAGINATION
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Book = _reflection.GeneratedProtocolMessageType('Book', (_message.Message,), {
@@ -219,6 +428,13 @@ Book = _reflection.GeneratedProtocolMessageType('Book', (_message.Message,), {
   # @@protoc_insertion_point(class_scope:library.Book)
   })
 _sym_db.RegisterMessage(Book)
+
+Books = _reflection.GeneratedProtocolMessageType('Books', (_message.Message,), {
+  'DESCRIPTOR' : _BOOKS,
+  '__module__' : 'library_service_pb2'
+  # @@protoc_insertion_point(class_scope:library.Books)
+  })
+_sym_db.RegisterMessage(Books)
 
 Message = _reflection.GeneratedProtocolMessageType('Message', (_message.Message,), {
   'DESCRIPTOR' : _MESSAGE,
@@ -234,6 +450,27 @@ BookName = _reflection.GeneratedProtocolMessageType('BookName', (_message.Messag
   })
 _sym_db.RegisterMessage(BookName)
 
+Pair = _reflection.GeneratedProtocolMessageType('Pair', (_message.Message,), {
+  'DESCRIPTOR' : _PAIR,
+  '__module__' : 'library_service_pb2'
+  # @@protoc_insertion_point(class_scope:library.Pair)
+  })
+_sym_db.RegisterMessage(Pair)
+
+UpdatedBook = _reflection.GeneratedProtocolMessageType('UpdatedBook', (_message.Message,), {
+  'DESCRIPTOR' : _UPDATEDBOOK,
+  '__module__' : 'library_service_pb2'
+  # @@protoc_insertion_point(class_scope:library.UpdatedBook)
+  })
+_sym_db.RegisterMessage(UpdatedBook)
+
+Pagination = _reflection.GeneratedProtocolMessageType('Pagination', (_message.Message,), {
+  'DESCRIPTOR' : _PAGINATION,
+  '__module__' : 'library_service_pb2'
+  # @@protoc_insertion_point(class_scope:library.Pagination)
+  })
+_sym_db.RegisterMessage(Pagination)
+
 
 
 _LIBRARY = _descriptor.ServiceDescriptor(
@@ -243,8 +480,8 @@ _LIBRARY = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=335,
-  serialized_end=535,
+  serialized_start=706,
+  serialized_end=968,
   methods=[
   _descriptor.MethodDescriptor(
     name='add_book',
@@ -271,7 +508,7 @@ _LIBRARY = _descriptor.ServiceDescriptor(
     full_name='library.Library.update_book',
     index=2,
     containing_service=None,
-    input_type=_BOOK,
+    input_type=_UPDATEDBOOK,
     output_type=_MESSAGE,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
@@ -283,6 +520,16 @@ _LIBRARY = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_BOOKNAME,
     output_type=_BOOK,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='get_books_list',
+    full_name='library.Library.get_books_list',
+    index=4,
+    containing_service=None,
+    input_type=_PAGINATION,
+    output_type=_BOOKS,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),
