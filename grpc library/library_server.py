@@ -6,13 +6,18 @@ import library_service_pb2
 import library_service_pb2_grpc
 
 import pymongo
-from google.protobuf.json_format import MessageToJson, MessageToDict
+from auth_module import authentication_module
+from bson.objectid import ObjectId
+from google.protobuf.json_format import MessageToDict
 
 client = pymongo.MongoClient("mongodb+srv://user1:user1password@libraryapp.bssao.mongodb.net/myFirstDatabase"
                              "?retryWrites=true&w=majority")
 db = client.get_database("Library")
 books_collection = db.get_collection("books")
 books_collection.create_index([("name", 1)], unique=True)
+
+users_db = client.get_database("Authentication")
+users_collection = users_db.get_collection("users")
 
 array_fields = ["authors"]
 string_fields = ["publisher", "name", "date_of_release", "description"]
@@ -39,12 +44,18 @@ class Library_manager(library_service_pb2_grpc.LibraryServicer):
         return response
 
     def delete_book(self, request, context):
+        metadata = context.invocation_metadata()
+        if not check_if_librarian_using_JWT(metadata):
+            return library_service_pb2.Message(message="Only librarians can delete a book from the DB.")
         result = books_collection.delete_one({"name": request.name})
         if result.deleted_count:
             return library_service_pb2.Message(message=request.name + " successfully deleted from DB.")
         return library_service_pb2.Message(message="No book was deleted from the DB.")
 
     def update_book(self, request, context):
+        metadata = context.invocation_metadata()
+        if not check_if_librarian_using_JWT(metadata):
+            return library_service_pb2.Message(message="Only librarians can update a book's info on the DB.")
         current_book_name = request.name
         book = books_collection.find_one({"name": current_book_name})
         # If we dont find the book with that current name, throw an error
@@ -75,10 +86,13 @@ class Library_manager(library_service_pb2_grpc.LibraryServicer):
                 return library_service_pb2.Message(message="Successfully updated document.")
             except Exception as e:
                 return library_service_pb2.Message(message="Error: " + str(e))
-        
+
         return library_service_pb2.Message(message="Field to update does not exist in the current DB.")
 
     def add_book(self, request, context):
+        metadata = context.invocation_metadata()
+        if not check_if_librarian_using_JWT(metadata):
+            return library_service_pb2.Message(message="Only librarians can add a book to the DB.")
         try:
             book_dict = MessageToDict(request)
             book = get_book_as_dict(book_dict)
@@ -156,6 +170,29 @@ def get_book_as_dict(book_dict):
         "date_of_release": book_dict.get("date_of_release", "")
     }
     return book
+
+
+def check_if_librarian_using_JWT(metadata):
+    for metadatum in metadata:
+        key = metadatum.key
+        value = metadatum.value
+        if key == "authorization":
+            token = value.split(" ")[-1]
+            if token is None:
+                return False
+            # Now decode token to get user id
+            user_id = authentication_module.decode_token(token)
+            # check if user is Librarian
+            user = users_collection.find_one({"_id": ObjectId(user_id)}, {"type": 1})
+            if user is None:
+                return False
+            # return true if Librarian
+            user_type = user.get("type", "")
+            if user_type == "LIBRARIAN":
+                return True
+            else:
+                return False
+    return False
 
 
 def serve():
