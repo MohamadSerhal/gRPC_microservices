@@ -29,6 +29,17 @@ def run():
         response = stub.get_books_list(library_service_pb2.Pagination(limit=3, offset=1))
         print("Testing pagination")
         print(response)
+        print("-----------------------------------------------------------")
+        updated_book = library_service_pb2.UpdatedBook(name="Book1Updated", field="authors")
+        updated_book.newArray.append('new updated author 1')
+        updated_book.newArray.append('new updated author 2')
+        # response = stub.update_book(library_service_pb2
+        #                             .UpdatedBook(name="Book1Updated",
+        #                                          field="authors",
+        #                                          newArray=["new updated author 1", "new updated author 2"]))
+        response = stub.update_book(updated_book)
+        print("Changing authors")
+        print(response)
 
 
 if __name__ == '__main__':

@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package library;
 
-import "google/protobuf/any.proto";
-
 service Library {
     // Add book to mongodb (only librarians can do that)
     rpc add_book (Book) returns (Message);
@@ -27,7 +25,21 @@ message Book {
     repeated string authors = 2;
     string publisher = 3;
     string date_of_release = 4;
-    enum Genre {
+//    enum Genre {
+//        NONE = 0;
+//        SCIENCE_FICTION = 1;
+//        ROMANCE = 2;
+//        DRAMA = 3;
+//        COMEDY = 4;
+//        HORROR = 5;
+//        ADVENTURE = 6;
+//        ACTION = 7;
+//    }
+    Genre genre = 5;
+    string description = 6;
+}
+
+enum Genre {
         NONE = 0;
         SCIENCE_FICTION = 1;
         ROMANCE = 2;
@@ -36,11 +48,7 @@ message Book {
         HORROR = 5;
         ADVENTURE = 6;
         ACTION = 7;
-    }
-    Genre genre = 5;
-    string description = 6;
 }
-
 
 message Books {
     repeated Book book = 1;
@@ -55,23 +63,12 @@ message BookName {
     string name = 1;
 }
 
-message Pair {
-    enum Fields {
-        NONE = 0;
-        name = 1;
-        authors = 2;
-        publisher = 3;
-        date_of_release = 4;
-        genre = 5;
-        description = 6;
-    }
-
-    Fields key = 1;
-    google.protobuf.Any value = 2;
-}
-
 message UpdatedBook {
-    repeated Pair updated_fields = 1;
+    string field = 1;
+    string name = 2;
+    string newValue = 3;
+    repeated string newArray = 4;
+    Genre newGenre = 5;
 }
 
 message Pagination {

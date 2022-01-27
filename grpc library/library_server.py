@@ -14,6 +14,10 @@ db = client.get_database("Library")
 books_collection = db.get_collection("books")
 books_collection.create_index([("name", 1)], unique=True)
 
+array_fields = ["authors"]
+string_fields = ["publisher", "name", "date_of_release", "description"]
+enum_fields = ["genre"]
+
 
 class Library_manager(library_service_pb2_grpc.LibraryServicer):
 
@@ -41,7 +45,38 @@ class Library_manager(library_service_pb2_grpc.LibraryServicer):
         return library_service_pb2.Message(message="No book was deleted from the DB.")
 
     def update_book(self, request, context):
-        return
+        current_book_name = request.name
+        book = books_collection.find_one({"name": current_book_name})
+        # If we dont find the book with that current name, throw an error
+        if book is None:
+            return library_service_pb2.Message(message="Book with {name} name doesnt exist."
+                                               .format(name=current_book_name))
+        field_to_update = request.field
+        if field_to_update in array_fields:
+            try:
+                updated_array = []
+                for newauthor in request.newArray:
+                    updated_array.append(newauthor)
+                books_collection.update_one({"name": current_book_name}, {"$set": {field_to_update: updated_array}})
+                return library_service_pb2.Message(message="Successfully updated document.")
+            except pymongo.errors.DuplicateKeyError:
+                return library_service_pb2.Message(message="Cant update name, other book with this name exists.")
+            except Exception as e:
+                return library_service_pb2.Message(message="Error: " + str(e))
+        elif field_to_update in string_fields:
+            try:
+                books_collection.update_one({"name": current_book_name}, {"$set": {field_to_update: request.newValue}})
+                return library_service_pb2.Message(message="Successfully updated document.")
+            except Exception as e:
+                return library_service_pb2.Message(message="Error: " + str(e))
+        elif field_to_update in enum_fields:
+            try:
+                books_collection.update_one({"name": current_book_name}, {"$set": {field_to_update: request.newGenre}})
+                return library_service_pb2.Message(message="Successfully updated document.")
+            except Exception as e:
+                return library_service_pb2.Message(message="Error: " + str(e))
+        
+        return library_service_pb2.Message(message="Field to update does not exist in the current DB.")
 
     def add_book(self, request, context):
         try:
@@ -102,13 +137,13 @@ class Library_manager(library_service_pb2_grpc.LibraryServicer):
                 book_desc = book.get("description", None)
                 book_release = book.get("date_of_release", None)
                 array_of_books.append(library_service_pb2.Book(name=book_name, authors=book_authors, genre=book_genre,
-                                                    publisher=book_pub,
-                                                    description=book_desc, date_of_release=book_release))
-            return library_service_pb2.Books(list_of_books=array_of_books)
+                                                               publisher=book_pub,
+                                                               description=book_desc, date_of_release=book_release))
+            return library_service_pb2.Books(book=array_of_books)
         except Exception as e:
             context.set_code(grpc.StatusCode.UNKNOWN)
             context.set_details(str(e))
-            return library_service_pb2.Books(list_of_books=[])
+            return library_service_pb2.Books(book=[])
 
 
 def get_book_as_dict(book_dict):
