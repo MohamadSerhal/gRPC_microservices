@@ -6,10 +6,7 @@ import library_service_pb2
 import library_service_pb2_grpc
 
 import pymongo
-from auth_module import authentication_module
-# from auth_module.auth_interceptor import ExceptionToAuthenticationInterceptor
-import jwt
-from bson.objectid import ObjectId
+from auth_module.auth_interceptor import ExceptionToAuthenticationInterceptor
 from google.protobuf.json_format import MessageToDict
 
 client = pymongo.MongoClient("mongodb+srv://user1:user1password@libraryapp.bssao.mongodb.net/myFirstDatabase"
@@ -51,18 +48,12 @@ class Library_manager(library_service_pb2_grpc.LibraryServicer):
         return response
 
     def delete_book(self, request, context):
-        metadata = context.invocation_metadata()
-        if not check_if_librarian_using_JWT(metadata):
-            return library_service_pb2.Message(message="Only librarians can delete a book from the DB.")
         result = books_collection.delete_one({"name": request.name})
         if result.deleted_count:
             return library_service_pb2.Message(message=request.name + " successfully deleted from DB.")
         return library_service_pb2.Message(message="No book was deleted from the DB.")
 
     def update_book(self, request, context):
-        metadata = context.invocation_metadata()
-        if not check_if_librarian_using_JWT(metadata):
-            return library_service_pb2.Message(message="Only librarians can update a book's info on the DB.")
         current_book_name = request.name
         book = books_collection.find_one({"name": current_book_name})
         # If we dont find the book with that current name, throw an error
@@ -97,9 +88,6 @@ class Library_manager(library_service_pb2_grpc.LibraryServicer):
         return library_service_pb2.Message(message="Field to update does not exist in the current DB.")
 
     def add_book(self, request, context):
-        metadata = context.invocation_metadata()
-        if not check_if_librarian_using_JWT(metadata):
-            return library_service_pb2.Message(message="Only librarians can add a book to the DB.")
         try:
             book_dict = MessageToDict(request)
             book = get_book_as_dict(book_dict)
@@ -162,38 +150,11 @@ def get_book_as_dict(book_dict):
     return book
 
 
-def check_if_librarian_using_JWT(metadata):
-    for metadatum in metadata:
-        key = metadatum.key
-        value = metadatum.value
-        if key == "authorization":
-            token = value.split(" ")[-1]
-            if token is None:
-                return False, None
-            # Now decode token to get user id
-            try:
-                user_id = authentication_module.decode_token(token)
-            except jwt.exceptions.ExpiredSignatureError:
-                return False, "Error: Token has expired."
-            except Exception as e:
-                return False, "Error: " + str(e)
-            # check if user is Librarian
-            user = users_collection.find_one({"_id": ObjectId(user_id)}, {"type": 1})
-            if user is None:
-                return False, None
-            # return true if Librarian
-            user_type = user.get("type", "")
-            if user_type == "LIBRARIAN":
-                return True, None
-            else:
-                return False, None
-    return False, None
-
-
 def serve():
-    # interceptors = [ExceptionToAuthenticationInterceptor()]
+    interceptors = [ExceptionToAuthenticationInterceptor()]
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10),
-                         options=(('grpc.so_reuseport', 1),))
+                         options=(('grpc.so_reuseport', 1),),
+                         interceptors=interceptors)
     library_service_pb2_grpc.add_LibraryServicer_to_server(Library_manager(), server)
     server.add_insecure_port('[::]:50051')
     server.start()
