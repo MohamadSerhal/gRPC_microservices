@@ -7,6 +7,7 @@ import library_service_pb2_grpc
 
 import pymongo
 from auth_module import authentication_module
+import jwt
 from bson.objectid import ObjectId
 from google.protobuf.json_format import MessageToDict
 
@@ -29,18 +30,11 @@ class Library_manager(library_service_pb2_grpc.LibraryServicer):
     def get_book(self, request, context):
         book = books_collection.find_one({"name": request.name}, {"_id": 0})
         if book is None:
-            context.set_code(grpc.StatusCode.NOT_FOUND)
-            context.set_details("Book with name " + request.name + " not found in DB.")
-            return library_service_pb2.Book()
-
-        book_name = book.get("name")
-        book_authors = book.get("authors", [])
-        book_genre = book.get("genre", "ACTION")
-        book_pub = book.get("publisher", None)
-        book_desc = book.get("description", None)
-        book_release = book.get("date_of_release", None)
-        response = library_service_pb2.Book(name=book_name, authors=book_authors, genre=book_genre, publisher=book_pub,
-                                            description=book_desc, date_of_release=book_release)
+            # context.set_code(grpc.StatusCode.NOT_FOUND)
+            # context.set_details("Book with name " + request.name + " not found in DB.")
+            # return library_service_pb2.Book()
+            context.abort(grpc.StatusCode.NOT_FOUND, "Book with name " + request.name + " not found in DB.")
+        response = library_service_pb2.Book(**book)
         return response
 
     def delete_book(self, request, context):
@@ -115,9 +109,10 @@ class Library_manager(library_service_pb2_grpc.LibraryServicer):
         if offset is None:
             offset = 0
         if limit < 0 or offset < 0:
-            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
-            context.set_details("Limit and offset must be non negative.")
-            return library_service_pb2.Books(list_of_books=[])
+            # context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            # context.set_details("Limit and offset must be non negative.")
+            # return library_service_pb2.Books(list_of_books=[])
+            context.abort(grpc.StatusCode.INVALID_ARGUMENT, "Limit and offset must be non negative.")
         try:
             books = books_collection.aggregate([
                 {
@@ -144,20 +139,13 @@ class Library_manager(library_service_pb2_grpc.LibraryServicer):
             # Translate books into an array of Book message
             array_of_books = []
             for book in books:
-                book_name = book.get("name")
-                book_authors = book.get("authors", [])
-                book_genre = book.get("genre", "ACTION")
-                book_pub = book.get("publisher", None)
-                book_desc = book.get("description", None)
-                book_release = book.get("date_of_release", None)
-                array_of_books.append(library_service_pb2.Book(name=book_name, authors=book_authors, genre=book_genre,
-                                                               publisher=book_pub,
-                                                               description=book_desc, date_of_release=book_release))
+                array_of_books.append(library_service_pb2.Book(**book))
             return library_service_pb2.Books(book=array_of_books)
         except Exception as e:
-            context.set_code(grpc.StatusCode.UNKNOWN)
-            context.set_details(str(e))
-            return library_service_pb2.Books(book=[])
+            # context.set_code(grpc.StatusCode.UNKNOWN)
+            # context.set_details(str(e))
+            # return library_service_pb2.Books(book=[])
+            context.abort(grpc.StatusCode.UNKNOWN, str(e))
 
 
 def get_book_as_dict(book_dict):
@@ -179,24 +167,29 @@ def check_if_librarian_using_JWT(metadata):
         if key == "authorization":
             token = value.split(" ")[-1]
             if token is None:
-                return False
+                return False, None
             # Now decode token to get user id
-            user_id = authentication_module.decode_token(token)
+            try:
+                user_id = authentication_module.decode_token(token)
+            except jwt.exceptions.ExpiredSignatureError:
+                return False, "Error: Token has expired."
+            except Exception as e:
+                return False, "Error: " + str(e)
             # check if user is Librarian
             user = users_collection.find_one({"_id": ObjectId(user_id)}, {"type": 1})
             if user is None:
-                return False
+                return False, None
             # return true if Librarian
             user_type = user.get("type", "")
             if user_type == "LIBRARIAN":
-                return True
+                return True, None
             else:
-                return False
-    return False
+                return False, None
+    return False, None
 
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=(('grpc.so_reuseport', 1),))
     library_service_pb2_grpc.add_LibraryServicer_to_server(Library_manager(), server)
     server.add_insecure_port('[::]:50051')
     server.start()
