@@ -7,6 +7,7 @@ import library_service_pb2_grpc
 
 import pymongo
 from auth_module import authentication_module
+# from auth_module.auth_interceptor import ExceptionToAuthenticationInterceptor
 import jwt
 from bson.objectid import ObjectId
 from google.protobuf.json_format import MessageToDict
@@ -25,14 +26,26 @@ string_fields = ["publisher", "name", "date_of_release", "description"]
 enum_fields = ["genre"]
 
 
+def check_positive_pagination(func):
+    def func_wrapper(self, request, context):
+        if request.offset is None:
+            request.offset = 0
+        if request.limit is None:
+            request.limit = 0
+        if request.offset < 0 or request.limit < 0:
+            raise Exception("Both limit and offset have to be non negative for function {} to work".
+                            format(func.__name__))
+        res = func(self, request, context)
+        return res
+
+    return func_wrapper
+
+
 class Library_manager(library_service_pb2_grpc.LibraryServicer):
 
     def get_book(self, request, context):
         book = books_collection.find_one({"name": request.name}, {"_id": 0})
         if book is None:
-            # context.set_code(grpc.StatusCode.NOT_FOUND)
-            # context.set_details("Book with name " + request.name + " not found in DB.")
-            # return library_service_pb2.Book()
             context.abort(grpc.StatusCode.NOT_FOUND, "Book with name " + request.name + " not found in DB.")
         response = library_service_pb2.Book(**book)
         return response
@@ -101,18 +114,10 @@ class Library_manager(library_service_pb2_grpc.LibraryServicer):
         except Exception as e:
             return library_service_pb2.Message(message="Exception: " + str(e))
 
+    @check_positive_pagination
     def get_books_list(self, request, context):
         limit = request.limit
         offset = request.offset
-        if limit is None:
-            limit = 0
-        if offset is None:
-            offset = 0
-        if limit < 0 or offset < 0:
-            # context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
-            # context.set_details("Limit and offset must be non negative.")
-            # return library_service_pb2.Books(list_of_books=[])
-            context.abort(grpc.StatusCode.INVALID_ARGUMENT, "Limit and offset must be non negative.")
         try:
             books = books_collection.aggregate([
                 {
@@ -142,9 +147,6 @@ class Library_manager(library_service_pb2_grpc.LibraryServicer):
                 array_of_books.append(library_service_pb2.Book(**book))
             return library_service_pb2.Books(book=array_of_books)
         except Exception as e:
-            # context.set_code(grpc.StatusCode.UNKNOWN)
-            # context.set_details(str(e))
-            # return library_service_pb2.Books(book=[])
             context.abort(grpc.StatusCode.UNKNOWN, str(e))
 
 
@@ -189,7 +191,9 @@ def check_if_librarian_using_JWT(metadata):
 
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=(('grpc.so_reuseport', 1),))
+    # interceptors = [ExceptionToAuthenticationInterceptor()]
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10),
+                         options=(('grpc.so_reuseport', 1),))
     library_service_pb2_grpc.add_LibraryServicer_to_server(Library_manager(), server)
     server.add_insecure_port('[::]:50051')
     server.start()
