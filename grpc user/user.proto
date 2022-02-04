@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+service user {
+  // Returns price of book
+  rpc get_book_price (BookName) returns (BookPrice);
+
+  // Gets array of books using pagination and adds an extra field to it
+  rpc extra_info (Pagination) returns (arrBooks);
+}
+
+message BookName {
+  string name = 1;
+  int32 num = 2;
+}
+
+message arrBooks {
+  repeated Book books = 1;
+}
+
+message BookPrice {
+  uint64 price = 1;
+}
+
+message Book {
+    string name = 1;
+    repeated string authors = 2;
+    string publisher = 3;
+    string date_of_release = 4;
+    Genre genre = 5;
+    string description = 6;
+    string extra_info = 7;
+}
+
+enum Genre {
+        NONE = 0;
+        SCIENCE_FICTION = 1;
+        ROMANCE = 2;
+        DRAMA = 3;
+        COMEDY = 4;
+        HORROR = 5;
+        ADVENTURE = 6;
+        ACTION = 7;
+}
+
+message Pagination {
+  int32 offset = 1;
+  int32 limit = 2;
+}
