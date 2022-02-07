@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  grpcLibray-container:
+    image: "mohamadserhal/grpclibrary-image:latest"
+    ports:
+      - "50051:50051"
+  grpcUser-container:
+    image: "mohamadserhal/grpcuser-image:latest"
+    ports:
+      - "50000:50000"
