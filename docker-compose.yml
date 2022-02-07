@@ -8,3 +8,8 @@ services:
     image: "mohamadserhal/grpcuser-image:latest"
     ports:
       - "50000:50000"
+  authentication-container:
+    image: "mohamadserhal/openapi-authentication-image:latest"
+    ports:
+      - "2000:2000"
+      
