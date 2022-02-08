@@ -75,4 +75,4 @@ def check_if_librarian_using_JWT(metadata):
                 return True, None
             else:
                 return False, "User is not a librarian."
-    return False, None
+    return False, "'authorization' metadata is missing."
