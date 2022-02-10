@@ -22,15 +22,31 @@ array_fields = ["authors"]
 string_fields = ["publisher", "name", "date_of_release", "description"]
 enum_fields = ["genre"]
 
+# dict to know which fields are required by each function
+required_fields = {'add_book': ["name"],
+                   "get_book": ["name"],
+                   "delete_book": ["name"],
+                   "update_book": ["name", "field"]}
 
-def check_positive_pagination(func):
+
+def check_required_fields(func):
     def func_wrapper(self, request, context):
-        if request.offset is None:
-            request.offset = 0
-        if request.limit is None:
-            request.limit = 0
-        if request.offset < 0 or request.limit < 0:
-            raise Exception("Both limit and offset have to be non negative for function {} to work".
+        function_name = func.__name__
+        fields = required_fields.get(function_name, None)
+        request_dict = MessageToDict(request)
+        for field in fields:
+            if field not in request_dict:
+                context.abort(grpc.StatusCode.INVALID_ARGUMENT,
+                              f"ERROR: Request message to function '{function_name}' needs to contain field '{field}'")
+        return func(self, request, context)
+
+    return func_wrapper
+
+
+def check_pagination(func):
+    def func_wrapper(self, request, context):
+        if request.offset < 0 or request.limit <= 0:
+            raise Exception("Limit has to be positive and offset has to be non negative for function {} to work".
                             format(func.__name__))
         res = func(self, request, context)
         return res
@@ -40,6 +56,7 @@ def check_positive_pagination(func):
 
 class Library_manager(library_service_pb2_grpc.LibraryServicer):
 
+    @check_required_fields
     def get_book(self, request, context):
         book = books_collection.find_one({"name": request.name}, {"_id": 0})
         if book is None:
@@ -47,52 +64,57 @@ class Library_manager(library_service_pb2_grpc.LibraryServicer):
         response = library_service_pb2.Book(**book)
         return response
 
+    @check_required_fields
     def delete_book(self, request, context):
         result = books_collection.delete_one({"name": request.name})
         if result.deleted_count:
             return library_service_pb2.Message(message=request.name + " successfully deleted from DB.")
         return library_service_pb2.Message(message="No book was deleted from the DB.")
 
+    @check_required_fields
     def update_book(self, request, context):
-        current_book_name = request.name
-        book = books_collection.find_one({"name": current_book_name})
-        # If we dont find the book with that current name, throw an error
-        if book is None:
-            return library_service_pb2.Message(message="Book with {name} name doesnt exist."
-                                               .format(name=current_book_name))
-        field_to_update = request.field
+        request_formatted = MessageToDict(request)
+
+        field_to_update = request_formatted.get("field", None)
+        field_value_to_update = None
+        current_book_name = request_formatted.get("name", None)
+
         if field_to_update in array_fields:
-            try:
-                updated_array = []
-                for newauthor in request.newArray:
-                    updated_array.append(newauthor)
-                books_collection.update_one({"name": current_book_name}, {"$set": {field_to_update: updated_array}})
-                return library_service_pb2.Message(message="Successfully updated document.")
-            except pymongo.errors.DuplicateKeyError:
-                return library_service_pb2.Message(message="Cant update name, other book with this name exists.")
-            except Exception as e:
-                return library_service_pb2.Message(message="Error: " + str(e))
+            field_value_to_update = request_formatted.get("newArray", None)
+
         elif field_to_update in string_fields:
-            try:
-                books_collection.update_one({"name": current_book_name}, {"$set": {field_to_update: request.newValue}})
-                return library_service_pb2.Message(message="Successfully updated document.")
-            except Exception as e:
-                return library_service_pb2.Message(message="Error: " + str(e))
+            field_value_to_update = request_formatted.get("newValue", None)
+
         elif field_to_update in enum_fields:
-            try:
-                books_collection.update_one({"name": current_book_name}, {"$set": {field_to_update: request.newGenre}})
-                return library_service_pb2.Message(message="Successfully updated document.")
-            except Exception as e:
-                return library_service_pb2.Message(message="Error: " + str(e))
+            field_value_to_update = request_formatted.get("newGenre", None)
+        
+        else:
+            return library_service_pb2.Message(message="Field to update does not exist in the current DB.")
 
-        return library_service_pb2.Message(message="Field to update does not exist in the current DB.")
+        if field_to_update == "name":
+            if not field_value_to_update:
+                return library_service_pb2.Message(message="Cannot set the new name to NONE")
+        try:
+            book = books_collection.update_one({"name": current_book_name},
+                                               {"$set": {field_to_update: field_value_to_update}})
 
+            if not book.matched_count:
+                return library_service_pb2.Message(message="Book with {name} name doesnt exist."
+                                                   .format(name=current_book_name))
+
+            return library_service_pb2.Message(message="Successfully updated document.")
+        except pymongo.errors.DuplicateKeyError:
+            return library_service_pb2.Message(message="Cant update name, other book with this new name exists.")
+        except Exception as e:
+            return library_service_pb2.Message(message="Error: " + str(e))
+
+    @check_required_fields
     def add_book(self, request, context):
         try:
             book_dict = MessageToDict(request)
             book = get_book_as_dict(book_dict)
-            if book["name"] is None:
-                return library_service_pb2.Message(message="Cannot add book with no name.")
+            # if book["name"] is None:
+            #     return library_service_pb2.Message(message="Cannot add book with no name.")
             books_collection.insert_one(book)
             return library_service_pb2.Message(message="Book added to DB successfully.")
         except pymongo.errors.DuplicateKeyError:
@@ -102,7 +124,9 @@ class Library_manager(library_service_pb2_grpc.LibraryServicer):
         except Exception as e:
             return library_service_pb2.Message(message="Exception: " + str(e))
 
-    @check_positive_pagination
+    # Dont need to check for required fields since if limit or offset dont exist,
+    # their value is set to 0 by default
+    @check_pagination
     def get_books_list(self, request, context):
         limit = request.limit
         offset = request.offset

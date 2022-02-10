@@ -9,15 +9,27 @@ import library_service_pb2_grpc
 from google.protobuf.json_format import MessageToDict
 import string
 
+required_fields = {"get_book_price": ['name']}
 
-def check_positive_pagination(func):
+
+def check_required_fields(func):
     def func_wrapper(self, request, context):
-        if request.offset is None:
-            request.offset = 0
-        if request.limit is None:
-            request.limit = 0
-        if request.offset < 0 or request.limit < 0:
-            raise Exception("Both limit and offset have to be non negative for function {} to work".
+        function_name = func.__name__
+        fields = required_fields.get(function_name, None)
+        request_dict = MessageToDict(request)
+        for field in fields:
+            if field not in request_dict:
+                context.abort(grpc.StatusCode.INVALID_ARGUMENT,
+                              f"ERROR: Request message to function '{function_name}' needs to contain field '{field}'")
+        return func(self, request, context)
+
+    return func_wrapper
+
+
+def check_pagination(func):
+    def func_wrapper(self, request, context):
+        if request.offset < 0 or request.limit <= 0:
+            raise Exception("Limit has to be positive and offset has to be non negative for function {} to work".
                             format(func.__name__))
         res = func(self, request, context)
         return res
@@ -31,7 +43,7 @@ library_server_URL = "grpcLibrary-container:50051"
 
 class UserServicer(user_pb2_grpc.userServicer):
 
-    @check_positive_pagination
+    @check_pagination
     def extra_info(self, request, context):
         # call library server to get array of Books
         response = None
@@ -53,6 +65,7 @@ class UserServicer(user_pb2_grpc.userServicer):
         # return the info in message format (arrBooks)
         return user_pb2.arrBooks(books=ans)
 
+    @check_required_fields
     def get_book_price(self, request, context):
         # call library server to get a book of name: request.name
         response = None
