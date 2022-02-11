@@ -1,7 +1,7 @@
 # Grpc microservices
 In this project, multiple GRPC services are used to create a Library database.
 
-##Library Service:
+## Library Service:
 PORT: 50051   
 DEPLOYED ON: python-grpc-image (built on python3-alpine)   
 Functionalities: 
@@ -11,7 +11,7 @@ Functionalities:
 - Get book: Returns a book (with specified name) from the database
 - Get books as a list: Returns a list of books in alphabetical order. Implements pagination.
 
-##User Service:
+## User Service:
 PORT: 50000   
 DEPLOYED ON: python-grpc-image (built on python3-alpine)
 Note: User service calls the Library service in it's api.  
@@ -19,7 +19,7 @@ Functionalities:
 - Extra info: Gets a list of books and add extra info to it randomly. Implements pagination.
 - Get price: Using the name of a book, it gets its price.
 
-##Docker-Compose File:
+## Docker-Compose File:
 Creates 3 containers:
 - grpcLibray-container: Running on "50051:50051"
 - grpcUser-container: Running on "50000:50000"
