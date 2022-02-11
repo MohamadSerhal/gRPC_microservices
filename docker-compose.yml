@@ -5,14 +5,19 @@ services:
     container_name: "grpcLibrary-container"
     ports:
       - "50051:50051"
+
   grpcUser-container:
     image: "mohamadserhal/grpcuser-image:latest"
     container_name: "grpcUser-container"
     ports:
       - "50000:50000"
+    environment:
+      - LIBRARY_HOST=grpcLibrary-container:50051
+
   authentication-container:
     image: "mohamadserhal/openapi-authentication-image:latest"
     container_name: "authentication-container"
     ports:
       - "2000:2000"
+
       

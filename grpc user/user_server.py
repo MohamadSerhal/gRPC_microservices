@@ -8,6 +8,7 @@ import library_service_pb2
 import library_service_pb2_grpc
 from google.protobuf.json_format import MessageToDict
 import string
+import os
 
 required_fields = {"get_book_price": ['name']}
 
@@ -38,8 +39,8 @@ def check_pagination(func):
 
 
 # library_server_URL = "localhost:50051"
-library_server_URL = "grpcLibrary-container:50051"
-
+# library_server_URL = "grpcLibrary-container:50051"
+library_server_URL = os.getenv('LIBRARY_HOST', 'localhost:50051')
 
 class UserServicer(user_pb2_grpc.userServicer):
 
